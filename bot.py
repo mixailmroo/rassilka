@@ -407,9 +407,24 @@ async def cb_msgs_done(cb: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "add_chat", CreateMailing.chats)
 async def cb_add_chat(cb: CallbackQuery, state: FSMContext):
     await state.set_state(AddChat.waiting)
+    await state.update_data(adding_folder=False)
     await cb.message.edit_text(
         "Введите username чата (например @mychat) или числовой ID:",
-        reply_markup=kb.step_back_kb("msgs_done")
+        reply_markup=kb.step_back_kb("chats_done")
+    )
+    await cb.answer()
+
+
+@router.callback_query(F.data == "add_folder", CreateMailing.chats)
+async def cb_add_folder(cb: CallbackQuery, state: FSMContext):
+    await state.set_state(AddChat.waiting)
+    await state.update_data(adding_folder=True)
+    await cb.message.edit_text(
+        "📂 <b>Добавление папки</b>\n\n"
+        "Введите username\'ы или ID чатов — каждый с новой строки:\n\n"
+        "Пример:\n<code>@chat1\n@chat2\n-100123456789</code>",
+        reply_markup=kb.step_back_kb("chats_done"),
+        parse_mode="HTML"
     )
     await cb.answer()
 
@@ -418,11 +433,22 @@ async def cb_add_chat(cb: CallbackQuery, state: FSMContext):
 async def receive_chat(msg: Message, state: FSMContext):
     data = await state.get_data()
     chats = data.get("chats", [])
-    chats.append(msg.text.strip())
-    await state.update_data(chats=chats)
+    adding_folder = data.get("adding_folder", False)
+
+    if adding_folder:
+        # Многострочный ввод — каждый чат с новой строки
+        new_chats = [line.strip() for line in msg.text.splitlines() if line.strip()]
+        chats.extend(new_chats)
+        added = len(new_chats)
+        label = f"📂 Добавлено {added} чатов из папки!"
+    else:
+        chats.append(msg.text.strip())
+        label = "✅ Чат добавлен!"
+
+    await state.update_data(chats=chats, adding_folder=False)
     await state.set_state(CreateMailing.chats)
     await msg.answer(
-        f"✅ Чат добавлен! Всего: {len(chats)}",
+        f"{label} Всего: {len(chats)}",
         reply_markup=kb.chats_kb(chats)
     )
 

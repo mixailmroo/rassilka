@@ -111,33 +111,29 @@ async def cmd_start(msg: Message, state: FSMContext):
         except ValueError:
             pass
 
+    is_new = await db.get_user(msg.from_user.id) is None
     await db.create_user(msg.from_user.id, msg.from_user.username, ref_by)
-    user = await db.get_user(msg.from_user.id)
 
-    # Проверяем подписку
-    subbed = await check_sub(msg.from_user.id)
+    # Новым — 3 дня бесплатно
+    if is_new:
+        await db.add_subscription(msg.from_user.id, 3)
 
+    name = msg.from_user.first_name or msg.from_user.username or "друг"
+    gift_line = "🎁 <b>Вам начислено 3 дня бесплатного доступа!</b>\n\n" if is_new else ""
     text = (
-        f"👋 Привет, @{msg.from_user.username or msg.from_user.first_name}!\n\n"
+        f"👋 Привет, <b>{name}</b>!\n\n"
         "Добро пожаловать в <b>AutoSender</b> — "
         "инструмент для автоматических рассылок через Telegram-аккаунты.\n\n"
         "⚡ <b>Что умеет бот:</b>\n"
-        "● Рассылка сообщений по чатам и группам\n"
-        "● Автоответчик на личные сообщения\n"
-        "● Автоответчик в группах\n"
-        "● Гибкое расписание и интервалы\n"
-        "● Управление несколькими аккаунтами\n\n"
-        "Выберите раздел ниже 👇"
+        "📨 Рассылка по чатам и группам\n"
+        "🤖 Автоответчик в ЛС и группах\n"
+        "⏱ Гибкое расписание и интервалы\n"
+        "🔗 Управление несколькими аккаунтами\n\n"
+        + gift_line
+        + "Выберите раздел 👇"
     )
     await msg.answer(text, reply_markup=kb.main_menu_kb(), parse_mode="HTML")
 
-    if not subbed:
-        await msg.answer(
-            "⚠️ <b>Ваша подписка истекла.</b>\n\n"
-            'Нажмите «Подписка» в главном меню, чтобы продлить доступ.',
-            reply_markup=kb.subscription_kb(),
-            parse_mode="HTML"
-        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -148,7 +144,7 @@ async def cmd_start(msg: Message, state: FSMContext):
 async def cb_main_menu(cb: CallbackQuery, state: FSMContext):
     await state.clear()
     await cb.message.edit_text(
-        "👋 <b>Главное меню</b>\n\nВыберите раздел:",
+        "🏠 <b>Главное меню</b>\n\nВыберите раздел 👇",
         reply_markup=kb.main_menu_kb(),
         parse_mode="HTML"
     )
@@ -525,8 +521,8 @@ async def cb_accounts(cb: CallbackQuery, state: FSMContext):
     accounts = await db.get_accounts(cb.from_user.id)
     limit = 3  # лимит аккаунтов на подписку (можно менять)
     text = (
-        f"👤 <b>Аккаунты</b>\n\n"
-        f"📊 У вас {len(accounts)}/{limit} аккаунтов\nОсталось: {max(0, limit - len(accounts))}"
+        f"🔗 <b>Аккаунты</b>\n\n"
+        f"📊 Добавлено: {len(accounts)} из {limit}\nДоступно слотов: {max(0, limit - len(accounts))}"
     )
     await cb.message.edit_text(text, reply_markup=kb.accounts_kb(accounts), parse_mode="HTML")
     await cb.answer()

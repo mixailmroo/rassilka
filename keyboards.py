@@ -1,19 +1,19 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # ── ГЛАВНОЕ МЕНЮ ──────────────────────────────────────────────────────────────
 
 def main_menu_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="📋 Мои рассылки", callback_data="mailings"),
-            InlineKeyboardButton(text="👤 Аккаунты",     callback_data="accounts"),
+            InlineKeyboardButton(text="📨 Мои рассылки", callback_data="mailings"),
+            InlineKeyboardButton(text="🔗 Аккаунты",     callback_data="accounts"),
         ],
         [
-            InlineKeyboardButton(text="💳 Подписка",    callback_data="subscription"),
-            InlineKeyboardButton(text="🤝 Рефералы",    callback_data="referrals"),
+            InlineKeyboardButton(text="💎 Подписка",     callback_data="subscription"),
+            InlineKeyboardButton(text="🫂 Рефералы",     callback_data="referrals"),
         ],
         [
-            InlineKeyboardButton(text="ℹ️ Помощь",      callback_data="help"),
+            InlineKeyboardButton(text="🛟 Помощь",       callback_data="help"),
         ],
     ])
 
@@ -23,41 +23,35 @@ def main_menu_kb():
 def mailings_kb(mailings):
     buttons = []
     for m in mailings:
-        status_icon = "🟢" if m["status"] == "running" else "🔴"
+        icon = "🟢" if m["status"] == "running" else "🔴"
         buttons.append([InlineKeyboardButton(
-            text=f"{status_icon} {m['name']}",
+            text=f"{icon} {m['name']}",
             callback_data=f"mailing:{m['id']}"
         )])
-    buttons.append([
-        InlineKeyboardButton(text="➕ Создать рассылку", callback_data="mailing_create"),
-    ])
-    buttons.append([
-        InlineKeyboardButton(text="« Главное меню",    callback_data="main_menu"),
-    ])
+    buttons.append([InlineKeyboardButton(text="✨ Создать рассылку", callback_data="mailing_create")])
+    buttons.append([InlineKeyboardButton(text="🏠 Главное меню",     callback_data="main_menu")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def mailing_detail_kb(mailing_id: int, status: str):
-    toggle = ("⏹ Остановить", f"mailing_stop:{mailing_id}") if status == "running" else \
+    toggle = ("⏸ Остановить", f"mailing_stop:{mailing_id}") if status == "running" else \
              ("▶️ Запустить",  f"mailing_start:{mailing_id}")
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=toggle[0], callback_data=toggle[1])],
-        [InlineKeyboardButton(text="🗑 Удалить рассылку", callback_data=f"mailing_delete:{mailing_id}")],
-        [InlineKeyboardButton(text="« Назад",            callback_data="mailings")],
+        [InlineKeyboardButton(text=toggle[0],              callback_data=toggle[1])],
+        [InlineKeyboardButton(text="🗑 Удалить",           callback_data=f"mailing_delete:{mailing_id}")],
+        [InlineKeyboardButton(text="◀️ Назад",             callback_data="mailings")],
     ])
 
 
 def back_kb(cb: str = "main_menu"):
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="« Назад", callback_data=cb)]
+        [InlineKeyboardButton(text="◀️ Назад", callback_data=cb)]
     ])
 
 
-# ── СОЗДАНИЕ РАССЫЛКИ — шаги ──────────────────────────────────────────────────
-
 def step_back_kb(cb: str):
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="« Назад", callback_data=cb)]
+        [InlineKeyboardButton(text="◀️ Назад", callback_data=cb)]
     ])
 
 
@@ -68,25 +62,25 @@ def accounts_pick_kb(accounts, back_cb: str = "mailing_create"):
             text=f"📱 {a['phone']}",
             callback_data=f"pick_account:{a['id']}"
         )])
-    buttons.append([InlineKeyboardButton(text="« Назад", callback_data=back_cb)])
+    buttons.append([InlineKeyboardButton(text="◀️ Назад", callback_data=back_cb)])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def messages_kb(messages: list):
     buttons = []
     for i, msg in enumerate(messages):
-        preview = msg.get("text", "")[:20] or "[фото]"
+        preview = msg.get("text", "")[:22] or "[фото]"
         buttons.append([InlineKeyboardButton(
             text=f"🗑 {preview}",
             callback_data=f"del_msg:{i}"
         )])
     buttons.append([
-        InlineKeyboardButton(text="➕ Текст/фото", callback_data="add_msg_text"),
-        InlineKeyboardButton(text="✉️ Переслать",  callback_data="add_msg_forward"),
+        InlineKeyboardButton(text="✏️ Текст / фото", callback_data="add_msg_text"),
+        InlineKeyboardButton(text="📩 Переслать",     callback_data="add_msg_forward"),
     ])
     if messages:
         buttons.append([InlineKeyboardButton(text="✅ Готово", callback_data="msgs_done")])
-    buttons.append([InlineKeyboardButton(text="« Назад", callback_data="mailing_step3")])
+    buttons.append([InlineKeyboardButton(text="◀️ Назад", callback_data="mailing_step3")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
@@ -99,20 +93,20 @@ def chats_kb(chats: list):
         )])
     buttons.append([
         InlineKeyboardButton(text="➕ Добавить чат",   callback_data="add_chat"),
-        InlineKeyboardButton(text="📁 Добавить папку", callback_data="add_folder"),
+        InlineKeyboardButton(text="📂 Добавить папку", callback_data="add_folder"),
     ])
     buttons.append([InlineKeyboardButton(text="📋 Загрузить .txt", callback_data="upload_chats")])
     if chats:
         buttons.append([InlineKeyboardButton(text="✅ Готово", callback_data="chats_done")])
-    buttons.append([InlineKeyboardButton(text="« Назад", callback_data="mailing_step4")])
+    buttons.append([InlineKeyboardButton(text="◀️ Назад", callback_data="mailing_step4")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def confirm_mailing_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Запустить сейчас", callback_data="mailing_run_now")],
-        [InlineKeyboardButton(text="💾 Сохранить (не запускать)", callback_data="mailing_save_only")],
-        [InlineKeyboardButton(text="« Назад", callback_data="mailing_step5")],
+        [InlineKeyboardButton(text="🚀 Запустить сейчас",          callback_data="mailing_run_now")],
+        [InlineKeyboardButton(text="💾 Сохранить без запуска",     callback_data="mailing_save_only")],
+        [InlineKeyboardButton(text="◀️ Назад",                     callback_data="mailing_step5")],
     ])
 
 
@@ -121,20 +115,20 @@ def confirm_mailing_kb():
 def accounts_kb(accounts):
     buttons = []
     for a in accounts:
-        status_icon = "🟢" if a["status"] == "active" else "🔴"
+        icon = "🟢" if a["status"] == "active" else "🔴"
         buttons.append([InlineKeyboardButton(
-            text=f"{status_icon} {a['phone']}",
+            text=f"{icon} {a['phone']}",
             callback_data=f"account:{a['id']}"
         )])
     buttons.append([InlineKeyboardButton(text="➕ Добавить аккаунт", callback_data="account_add")])
-    buttons.append([InlineKeyboardButton(text="« Главное меню",     callback_data="main_menu")])
+    buttons.append([InlineKeyboardButton(text="🏠 Главное меню",     callback_data="main_menu")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def account_detail_kb(account_id: int):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🗑 Удалить аккаунт", callback_data=f"account_delete:{account_id}")],
-        [InlineKeyboardButton(text="« Назад",           callback_data="accounts")],
+        [InlineKeyboardButton(text="◀️ Назад",           callback_data="accounts")],
     ])
 
 
@@ -142,9 +136,9 @@ def proxy_choice_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="✅ Да, добавить прокси", callback_data="proxy_yes"),
-            InlineKeyboardButton(text="➡️ Продолжить",          callback_data="proxy_no"),
+            InlineKeyboardButton(text="⏩ Пропустить",          callback_data="proxy_no"),
         ],
-        [InlineKeyboardButton(text="« Назад", callback_data="accounts")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="accounts")],
     ])
 
 
@@ -152,17 +146,21 @@ def api_choice_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="✅ Да, ввести API", callback_data="api_yes"),
-            InlineKeyboardButton(text="➡️ Продолжить",     callback_data="api_no"),
+            InlineKeyboardButton(text="⏩ Пропустить",     callback_data="api_no"),
         ],
-        [InlineKeyboardButton(text="« Назад", callback_data="account_add")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="account_add")],
     ])
 
 
 def numpad_kb(current_code: str = ""):
-    """Numpad for entering Telegram code"""
-    display = " ".join(list(current_code.ljust(5, "■")[:5]))
+    filled  = list(current_code)
+    display = ""
+    for i in range(5):
+        display += (filled[i] if i < len(filled) else "·") + " "
+    display = display.strip()
+
     buttons = [
-        [InlineKeyboardButton(text=f"Код: {display}", callback_data="noop")],
+        [InlineKeyboardButton(text=f"🔢  {display}", callback_data="noop")],
         [
             InlineKeyboardButton(text="1", callback_data="code:1"),
             InlineKeyboardButton(text="2", callback_data="code:2"),
@@ -179,13 +177,13 @@ def numpad_kb(current_code: str = ""):
             InlineKeyboardButton(text="9", callback_data="code:9"),
         ],
         [
-            InlineKeyboardButton(text="🗑",  callback_data="code:del"),
+            InlineKeyboardButton(text="⌫",  callback_data="code:del"),
             InlineKeyboardButton(text="0",  callback_data="code:0"),
-            InlineKeyboardButton(text="«",  callback_data="code:back"),
+            InlineKeyboardButton(text="◀️", callback_data="code:back"),
         ],
         [
-            InlineKeyboardButton(text="« Назад",      callback_data="account_phone"),
-            InlineKeyboardButton(text="✅ Подтвердить", callback_data="code:confirm"),
+            InlineKeyboardButton(text="◀️ Назад",       callback_data="account_phone"),
+            InlineKeyboardButton(text="✅ Подтвердить",  callback_data="code:confirm"),
         ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -195,9 +193,9 @@ def numpad_kb(current_code: str = ""):
 
 def subscription_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎟 Ввести промокод", callback_data="enter_promo")],
-        [InlineKeyboardButton(text="💳 Купить подписку", callback_data="buy_sub")],
-        [InlineKeyboardButton(text="« Главное меню",    callback_data="main_menu")],
+        [InlineKeyboardButton(text="🎟 Ввести промокод",  callback_data="enter_promo")],
+        [InlineKeyboardButton(text="💳 Купить подписку",  callback_data="buy_sub")],
+        [InlineKeyboardButton(text="🏠 Главное меню",     callback_data="main_menu")],
     ])
 
 
@@ -206,8 +204,8 @@ def subscription_kb():
 def help_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📜 Политика конфиденциальности", url="https://t.me/")],
-        [InlineKeyboardButton(text="📄 Польз. соглашение",          url="https://t.me/")],
-        [InlineKeyboardButton(text="🆘 Поддержка",                  url="https://t.me/febashsupportbot")],
-        [InlineKeyboardButton(text="📱 Рассылка в ЛС",              callback_data="dm_mailing")],
-        [InlineKeyboardButton(text="« Главное меню",                callback_data="main_menu")],
+        [InlineKeyboardButton(text="📄 Пользовательское соглашение", url="https://t.me/")],
+        [InlineKeyboardButton(text="🆘 Поддержка",                   url="https://t.me/febashsupportbot")],
+        [InlineKeyboardButton(text="📩 Рассылка в ЛС",               callback_data="dm_mailing")],
+        [InlineKeyboardButton(text="🏠 Главное меню",                 callback_data="main_menu")],
     ])

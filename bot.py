@@ -36,6 +36,10 @@ DEFAULT_API_ID   = int(os.getenv("DEFAULT_API_ID", "2040"))
 DEFAULT_API_HASH = os.getenv("DEFAULT_API_HASH", "b18441a1ff607e10a989891a5462e627")
 REF_PERCENT      = int(os.getenv("REF_PERCENT", "20"))
 
+OWNER_USERNAME   = os.getenv("OWNER_USERNAME", "cryptonaw")
+MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "cryptopuo")
+SUB_PRICE        = os.getenv("SUB_PRICE", "89")  # ₽ за период (30 дней)
+
 bot = Bot(token=BOT_TOKEN)
 dp  = Dispatcher(storage=MemoryStorage())
 router = Router()
@@ -158,15 +162,16 @@ async def cb_main_menu(cb: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "help")
 async def cb_help(cb: CallbackQuery):
     text = (
-        "📋 <b>Рассылки</b> — рассылай сообщения по чатам и группам\n"
+        "ℹ️ <b>Справка по боту</b>\n\n"
+        "📨 <b>Рассылки</b> — рассылай сообщения по чатам и группам\n"
         "● Текст, фото, пересылка сообщений\n"
         "● Расписание по времени и интервалам\n"
         "● Несколько аккаунтов на одну рассылку\n\n"
-        "👤 <b>Аккаунты</b> — добавляй Telegram-аккаунты\n"
+        "🔗 <b>Аккаунты</b> — добавляй Telegram-аккаунты\n"
         "● Поддержка прокси SOCKS5\n"
         "● Автоответчик в ЛС и группах\n\n"
-        "💳 <b>Подписка</b> — CryptoBot, TON, карта, промокоды\n"
-        "🤝 <b>Рефералы</b> — приглашай друзей и получай % с оплат\n\n"
+        f"💎 <b>Подписка</b> — всего {SUB_PRICE}₽/мес. CryptoBot, TON, карта, промокоды\n"
+        "🫂 <b>Рефералы</b> — приглашай друзей и получай % с оплат\n\n"
         "➕ <b>Как добавить аккаунт:</b>\n"
         "1. «Аккаунты» → «Добавить аккаунт»\n"
         "2. При желании укажи прокси SOCKS5\n"
@@ -175,9 +180,24 @@ async def cb_help(cb: CallbackQuery):
         "1. «Рассылки» → «Создать»\n"
         "2. Выбери аккаунт, добавь сообщения и чаты\n"
         "3. Настрой интервал, расписание → Запуск\n\n"
-        "🆘 <b>Поддержка:</b> @febashsupportbot"
+        f"👑 Владелец: @{OWNER_USERNAME}\n"
+        f"🛟 Менеджер (поддержка): @{MANAGER_USERNAME}"
     )
-    await cb.message.edit_text(text, reply_markup=kb.help_kb(), parse_mode="HTML")
+    await cb.message.edit_text(text, reply_markup=kb.help_kb(OWNER_USERNAME, MANAGER_USERNAME), parse_mode="HTML")
+    await cb.answer()
+
+
+@router.callback_query(F.data == "support")
+async def cb_support(cb: CallbackQuery):
+    text = (
+        "🛟 <b>Поддержка</b>\n\n"
+        "Если у вас возникли вопросы, проблемы с ботом или предложения — "
+        "напишите нам напрямую:\n\n"
+        f"👑 Владелец проекта: @{OWNER_USERNAME}\n"
+        f"🛟 Менеджер (поддержка): @{MANAGER_USERNAME}\n\n"
+        "Отвечаем быстро 🚀"
+    )
+    await cb.message.edit_text(text, reply_markup=kb.support_kb(OWNER_USERNAME, MANAGER_USERNAME), parse_mode="HTML")
     await cb.answer()
 
 
@@ -928,14 +948,16 @@ async def receive_promo(msg: Message, state: FSMContext):
 async def cb_buy_sub(cb: CallbackQuery):
     text = (
         "💳 <b>Купить подписку</b>\n\n"
-        "Доступные тарифы:\n\n"
-        "● 7 дней — <b>$5</b>\n"
-        "● 30 дней — <b>$15</b>\n"
-        "● 90 дней — <b>$35</b>\n\n"
-        "Оплата: CryptoBot, TON, карта\n\n"
-        "Для оплаты обратитесь в поддержку: @febashsupportbot"
+        f"🔥 Всего <b>{SUB_PRICE}₽</b> за 30 дней безлимитного доступа!\n\n"
+        "В подписку входит:\n"
+        "📨 Безлимит рассылок\n"
+        "🔗 До 3 аккаунтов\n"
+        "⏱ Гибкое расписание\n"
+        "🤖 Автоответчик\n\n"
+        "💰 Оплата: CryptoBot, TON, карта\n\n"
+        f"Для оплаты напишите менеджеру: @{MANAGER_USERNAME}"
     )
-    await cb.message.edit_text(text, reply_markup=kb.back_kb("subscription"), parse_mode="HTML")
+    await cb.message.edit_text(text, reply_markup=kb.buy_sub_kb(MANAGER_USERNAME), parse_mode="HTML")
     await cb.answer()
 
 
@@ -1112,15 +1134,174 @@ async def cmd_stats(msg: Message):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  БЫСТРЫЕ КОМАНДЫ (алиасы)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@router.message(Command("help"))
+async def cmd_help(msg: Message, state: FSMContext):
+    await state.clear()
+    text = (
+        "ℹ️ <b>Справка по боту</b>\n\n"
+        "📨 <b>Рассылки</b> — рассылай сообщения по чатам и группам\n"
+        "● Текст, фото, пересылка сообщений\n"
+        "● Расписание по времени и интервалам\n"
+        "● Несколько аккаунтов на одну рассылку\n\n"
+        "🔗 <b>Аккаунты</b> — добавляй Telegram-аккаунты\n"
+        "● Поддержка прокси SOCKS5\n"
+        "● Автоответчик в ЛС и группах\n\n"
+        f"💎 <b>Подписка</b> — всего {SUB_PRICE}₽/мес. CryptoBot, TON, карта, промокоды\n"
+        "🫂 <b>Рефералы</b> — приглашай друзей и получай % с оплат\n\n"
+        f"👑 Владелец: @{OWNER_USERNAME}\n"
+        f"🛟 Менеджер (поддержка): @{MANAGER_USERNAME}\n\n"
+        "📋 <b>Команды:</b>\n"
+        "/menu — главное меню\n"
+        "/mymailings — мои рассылки\n"
+        "/accounts — мои аккаунты\n"
+        "/mysubs — моя подписка\n"
+        "/buy — купить подписку\n"
+        "/referrals — рефералы\n"
+        "/support — поддержка"
+    )
+    await msg.answer(text, reply_markup=kb.help_kb(OWNER_USERNAME, MANAGER_USERNAME), parse_mode="HTML")
+
+
+@router.message(Command("menu"))
+async def cmd_menu(msg: Message, state: FSMContext):
+    await state.clear()
+    await msg.answer(
+        "🏠 <b>Главное меню</b>\n\nВыберите раздел 👇",
+        reply_markup=kb.main_menu_kb(),
+        parse_mode="HTML"
+    )
+
+
+@router.message(Command("mysubs", "subscription", "sub"))
+async def cmd_mysubs(msg: Message, state: FSMContext):
+    await state.clear()
+    user      = await db.get_user(msg.from_user.id)
+    subbed    = await check_sub(msg.from_user.id)
+    sub_until = fmt_time(user["sub_until"]) if user and user["sub_until"] > 0 else "—"
+    status    = f"✅ Активна до {sub_until}" if subbed else "❌ Нет активной подписки"
+
+    text = (
+        f"💎 <b>Подписка</b>\n\n"
+        f"🔘 Статус: {status}\n\n"
+        "Выберите действие:"
+    )
+    await msg.answer(text, reply_markup=kb.subscription_kb(), parse_mode="HTML")
+
+
+@router.message(Command("mymailings", "mailings"))
+async def cmd_mymailings(msg: Message, state: FSMContext):
+    await state.clear()
+    if not await check_sub(msg.from_user.id):
+        await msg.answer("⚠️ Подписка истекла! Перейдите в раздел «Подписка».", reply_markup=kb.subscription_kb())
+        return
+
+    mailings = await db.get_mailings(msg.from_user.id)
+    if not mailings:
+        text = "📨 <b>Ваши рассылки:</b>\n\nУ вас пока нет рассылок."
+    else:
+        lines = "\n".join(
+            f"● {m['name']} — {STATUS_ICON.get(m['status'], m['status'])}"
+            for m in mailings
+        )
+        text = f"📨 <b>Ваши рассылки:</b>\n\n{lines}\n\nВыберите рассылку или создайте новую:"
+
+    await msg.answer(text, reply_markup=kb.mailings_kb(mailings), parse_mode="HTML")
+
+
+@router.message(Command("buy"))
+async def cmd_buy(msg: Message, state: FSMContext):
+    await state.clear()
+    text = (
+        "💳 <b>Купить подписку</b>\n\n"
+        f"🔥 Всего <b>{SUB_PRICE}₽</b> за 30 дней безлимитного доступа!\n\n"
+        "В подписку входит:\n"
+        "📨 Безлимит рассылок\n"
+        "🔗 До 3 аккаунтов\n"
+        "⏱ Гибкое расписание\n"
+        "🤖 Автоответчик\n\n"
+        "💰 Оплата: CryptoBot, TON, карта\n\n"
+        f"Для оплаты напишите менеджеру: @{MANAGER_USERNAME}"
+    )
+    await msg.answer(text, reply_markup=kb.buy_sub_kb(MANAGER_USERNAME), parse_mode="HTML")
+
+
+@router.message(Command("support"))
+async def cmd_support(msg: Message, state: FSMContext):
+    await state.clear()
+    text = (
+        "🛟 <b>Поддержка</b>\n\n"
+        "Если у вас возникли вопросы, проблемы с ботом или предложения — "
+        "напишите нам напрямую:\n\n"
+        f"👑 Владелец проекта: @{OWNER_USERNAME}\n"
+        f"🛟 Менеджер (поддержка): @{MANAGER_USERNAME}\n\n"
+        "Отвечаем быстро 🚀"
+    )
+    await msg.answer(text, reply_markup=kb.support_kb(OWNER_USERNAME, MANAGER_USERNAME), parse_mode="HTML")
+
+
+@router.message(Command("accounts"))
+async def cmd_accounts(msg: Message, state: FSMContext):
+    await state.clear()
+    accounts = await db.get_accounts(msg.from_user.id)
+    limit = 3
+    text = (
+        f"🔗 <b>Аккаунты</b>\n\n"
+        f"📊 Добавлено: {len(accounts)} из {limit}\nДоступно слотов: {max(0, limit - len(accounts))}"
+    )
+    await msg.answer(text, reply_markup=kb.accounts_kb(accounts), parse_mode="HTML")
+
+
+@router.message(Command("referrals", "ref"))
+async def cmd_referrals(msg: Message, state: FSMContext):
+    await state.clear()
+    refs = await db.get_referrals(msg.from_user.id)
+    link = f"https://t.me/{(await bot.get_me()).username}?start=ref{msg.from_user.id}"
+
+    if refs:
+        lines = "\n".join(f"● @{r['username'] or r['ref_user']}" for r in refs)
+        ref_text = f"Ваши рефералы ({len(refs)}):\n{lines}"
+    else:
+        ref_text = "У вас пока нет рефералов."
+
+    text = (
+        f"🫂 <b>Рефералы</b>\n\n"
+        f"Приглашайте друзей и получайте <b>{REF_PERCENT}%</b> с каждой их оплаты!\n\n"
+        f"🔗 Ваша реферальная ссылка:\n<code>{link}</code>\n\n"
+        f"{ref_text}"
+    )
+    await msg.answer(text, reply_markup=kb.back_kb("main_menu"), parse_mode="HTML")
+
+
+async def setup_bot_commands():
+    from aiogram.types import BotCommand
+    await bot.set_my_commands([
+        BotCommand(command="start",       description="🚀 Запустить бота"),
+        BotCommand(command="menu",        description="🏠 Главное меню"),
+        BotCommand(command="mymailings",  description="📨 Мои рассылки"),
+        BotCommand(command="accounts",    description="🔗 Мои аккаунты"),
+        BotCommand(command="mysubs",      description="💎 Моя подписка"),
+        BotCommand(command="buy",         description="💳 Купить / продлить подписку"),
+        BotCommand(command="referrals",   description="🫂 Реферальная программа"),
+        BotCommand(command="support",     description="🛟 Поддержка"),
+        BotCommand(command="help",        description="ℹ️ Помощь"),
+    ])
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def main():
     await db.init_db()
     await sender.restore_mailings()
+    await setup_bot_commands()
     log.info("Bot started")
     await dp.start_polling(bot, skip_updates=True)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+

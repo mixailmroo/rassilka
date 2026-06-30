@@ -13,7 +13,8 @@ def main_menu_kb():
             InlineKeyboardButton(text="🫂 Рефералы",     callback_data="referrals"),
         ],
         [
-            InlineKeyboardButton(text="🛟 Помощь",       callback_data="help"),
+            InlineKeyboardButton(text="ℹ️ Помощь",       callback_data="help"),
+            InlineKeyboardButton(text="🛟 Поддержка",    callback_data="support"),
         ],
     ])
 
@@ -201,11 +202,29 @@ def subscription_kb():
 
 # ── ПОМОЩЬ ────────────────────────────────────────────────────────────────────
 
-def help_kb():
+def help_kb(owner: str = "cryptonaw", manager: str = "cryptopuo"):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📜 Политика конфиденциальности", url="https://t.me/")],
         [InlineKeyboardButton(text="📄 Пользовательское соглашение", url="https://t.me/")],
-        [InlineKeyboardButton(text="🆘 Поддержка",                   url="https://t.me/febashsupportbot")],
-        [InlineKeyboardButton(text="📩 Рассылка в ЛС",               callback_data="dm_mailing")],
-        [InlineKeyboardButton(text="🏠 Главное меню",                 callback_data="main_menu")],
+        [
+            InlineKeyboardButton(text="👑 Владелец",  url=f"https://t.me/{owner}"),
+            InlineKeyboardButton(text="🛟 Менеджер",  url=f"https://t.me/{manager}"),
+        ],
+        [InlineKeyboardButton(text="📩 Рассылка в ЛС", callback_data="dm_mailing")],
+        [InlineKeyboardButton(text="🏠 Главное меню",  callback_data="main_menu")],
+    ])
+
+
+def support_kb(owner: str = "cryptonaw", manager: str = "cryptopuo"):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="👑 Владелец",  url=f"https://t.me/{owner}")],
+        [InlineKeyboardButton(text="🛟 Менеджер (поддержка)", url=f"https://t.me/{manager}")],
+        [InlineKeyboardButton(text="🏠 Главное меню", callback_data="main_menu")],
+    ])
+
+
+def buy_sub_kb(manager: str = "cryptopuo"):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 Написать менеджеру", url=f"https://t.me/{manager}")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="subscription")],
     ])
